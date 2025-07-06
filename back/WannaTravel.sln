@@ -11,9 +11,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "infrastructure", "infrastru
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WannaTravel.API", "api\WannaTravel.API.csproj", "{77E4464A-8161-44D7-985D-6867EFF308DC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WannaTravel.Infrastructure", "infrastructure\WannaTravel.Infrastructure.csproj", "{33FC7217-73CB-4F47-9B06-D46AAC42650B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WannaTravel.Infrastructure", "infrastructure\WannaTravel.Infrastructure.csproj", "{33FC7217-73CB-4F47-9B06-D46AAC42650B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WannaTravel.Logic", "logic\WannaTravel.Logic.csproj", "{F22BF897-F21B-4678-82B7-2C9C001B3B01}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WannaTravel.Logic", "logic\WannaTravel.Logic.csproj", "{F22BF897-F21B-4678-82B7-2C9C001B3B01}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

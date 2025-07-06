@@ -13,4 +13,7 @@ public class UserRepository : IUserRepository
 
     public async Task<IEnumerable<User>> GetAll()
         => await appDbContext.Users.ToListAsync();
+
+    public async Task<User?> GetByEmail(string email)
+        => await appDbContext.Users.SingleOrDefaultAsync(w => w.Email == email);
 }
