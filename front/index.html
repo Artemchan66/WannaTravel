@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charsert="UTF-8">
+		<title>ass</title>
+		<style>
+			html, body {
+				margin: 0;
+				padding: 0;
+				height: 100%;
+			}
+			#map-container {
+				width: 100vw;
+				height: 100vh;
+				display: block;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="map-container"></div>
+		<script>
+			async function loadMap() {
+				try
+				{
+					const res = await fetch("http://localhost:5221/map/world");
+					const svgText = await res.text();
+					
+					const container = document.getElementById("map-container");
+					container.innerHTML = svgText;
+					
+					const svg = container.querySelector("svg");
+					if (svg)
+					{
+						svg.setAttribute("width", "100%");
+						svg.setAttribute("height", "100%");
+						svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+					}
+				}
+				catch (error)
+				{
+					console.error("Failed to load map: ", error);
+				}
+			}		
+			loadMap();
+		</script>
+	</body>
+</html>
