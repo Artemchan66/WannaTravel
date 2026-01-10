@@ -56,41 +56,39 @@
 					}
 					
 					const tooltip = document.getElementById("tooltip");
-					console.log(tooltip);
 					const paths = svg.querySelectorAll("path");				
 					const countries = {};
-					paths.forEach(path => 
-					{
-						const name = path.getAttribute("name") || path.getAttribute("class")
-						
-						path.addEventListener("mouseenter", (e) => 
-						{
-							path.classList.add("highlight");
-							tooltip.textContent = name;
-							tooltip.style.display = "block";
-						});
 
-						path.addEventListener("mousemove", (e) =>
-						{
-							tooltip.style.left = e.pageX + 10 + "px";
-							tooltip.style.top = e.pageY + 10 + "px";
-						});
-
-						path.addEventListener("mouseleave", () => 
-						{
-							path.classList.remove("highlight");
-							tooltip.style.display = "none";
-						});
-
-						if (!countries[name])
-						{
-							countries[name] = [];
-						}
-						
-						countries[name].push(path);
-					});
+					paths.forEach(path => {
+					    const name = path.getAttribute("name") || path.getAttribute("class");
 					
-					console.log(countries);
+					    if (!countries[name]) {
+					        countries[name] = [];
+					    }
+					    countries[name].push(path);
+					});
+
+					Object.keys(countries).forEach(name => {
+					    const countryPaths = countries[name];
+					
+					    countryPaths.forEach(path => {
+					        path.addEventListener("mouseenter", (e) => {
+					            countryPaths.forEach(p => p.classList.add("highlight"));
+					            tooltip.textContent = name;
+					            tooltip.style.display = "block";
+					        });
+						
+					        path.addEventListener("mousemove", (e) => {
+					            tooltip.style.left = e.pageX + 10 + "px";
+					            tooltip.style.top = e.pageY + 10 + "px";
+					        });
+						
+					        path.addEventListener("mouseleave", () => {
+					            countryPaths.forEach(p => p.classList.remove("highlight"));
+					            tooltip.style.display = "none";
+					        });
+					    });
+					});
 				}
 				catch (error)
 				{
