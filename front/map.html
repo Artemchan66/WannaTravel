@@ -154,6 +154,23 @@
             width: 100%;
             font-size: 14px;
         }
+
+        #other-users-section {
+            margin-top: 12px;
+        }
+
+        #observing-banner {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,0,0.8);
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: none;
+            z-index: 30;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -177,9 +194,21 @@
     </div>
     <div id="user-sidebar-content">
         <p><strong>Username:</strong> <span id="username">Loading...</span></p>
+
+        <div id="other-users-section">
+            <strong>Observe Other Users:</strong>
+            <select id="other-users-dropdown">
+                <option value="">Select a user</option>
+            </select>
+            <button id="observe-user-button">Observe</button>
+            <button id="stop-observing-button" style="margin-top:8px;">Back to My Map</button>
+        </div>
+
         <button id="logout-button">Logout</button>
     </div>
 </div>
+
+<div id="observing-banner">Observing: <span id="observed-username"></span></div>
 
 <script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
 <script>
@@ -198,6 +227,22 @@
     let isDragging = false;
     let dragStartX = 0;
     let dragStartY = 0;
+
+    let observingUser = null;
+
+    const sidebar = document.getElementById('user-sidebar');
+    const toggleButton = document.getElementById('user-sidebar-toggle');
+    const closeButton = document.getElementById('close-sidebar');
+
+    const usernameEl = document.getElementById('username');
+    const logoutButton = document.getElementById('logout-button');
+
+    const otherUsersDropdown = document.getElementById('other-users-dropdown');
+    const observeUserButton = document.getElementById('observe-user-button');
+    const stopObservingButton = document.getElementById('stop-observing-button');
+
+    const observingBanner = document.getElementById('observing-banner');
+    const observedUsername = document.getElementById('observed-username');
 
     mapContainer.addEventListener('mousedown', e => {
         isDragging = false;
@@ -278,7 +323,7 @@
                     path.addEventListener('click', e => {
                         e.stopPropagation();
                         if (isDragging) return;
-
+                        if (observingUser) return;
                         activeCountry = name;
                         activePaths = countryPaths;
                         popupTitle.textContent = name;
@@ -306,6 +351,7 @@
     }
 
     popup.addEventListener('click', async e => {
+        if (observingUser) return;
         if (!e.target.dataset.state) return;
 
         let state = e.target.dataset.state;
@@ -337,18 +383,6 @@
     document.addEventListener('click', () => {
         popup.style.display = 'none';
     });
-
-    (async () => {
-        await loadUserCountries();
-        await loadMap();
-    })();
-
-    const sidebar = document.getElementById('user-sidebar');
-    const toggleButton = document.getElementById('user-sidebar-toggle');
-    const closeButton = document.getElementById('close-sidebar');
-
-    const usernameEl = document.getElementById('username');
-    const logoutButton = document.getElementById('logout-button');
 
     toggleButton.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -386,8 +420,78 @@
         }
     });
 
-    loadUserInfo();
-</script>
+    async function loadOtherUsers() {
+        try {
+            const res = await fetch(`${API}users`, { credentials: 'include' });
+            if (!res.ok) return;
+            const users = await res.json();
+            otherUsersDropdown.innerHTML = '<option value="">Select a user</option>';
+            users.forEach(user => {
+                if(user.name && user.name !== usernameEl.textContent) {
+                    const option = document.createElement('option');
+                    option.value = user.id;
+                    option.textContent = user.name;
+                    otherUsersDropdown.appendChild(option);
+                }
+            });
+        } catch (err) {
+            console.error(err);
+        }
+    }
 
+    observeUserButton.addEventListener('click', async () => {
+        const selectedUserId = otherUsersDropdown.value;
+        if (!selectedUserId) return;
+        try {
+            const userRes = await fetch(`${API}users/${selectedUserId}`, { credentials: 'include' });
+            const userInfo = await userRes.json();
+            observedUsername.textContent = userInfo.name;
+            observingBanner.style.display = 'block';
+            observingUser = selectedUserId;
+
+            const res = await fetch(`${API}user/countries/${selectedUserId}`, { credentials: 'include' });
+            if (!res.ok) return;
+            const otherUserCountries = await res.json();
+
+            const paths = document.querySelectorAll('path');
+            paths.forEach(p => p.classList.remove('planned', 'visited'));
+
+            otherUserCountries.forEach(x => {
+                const countryPaths = document.querySelectorAll(`[data-country="${x.countryName}"]`);
+                if (x.status) {
+                    countryPaths.forEach(p => p.classList.add(x.status.toLowerCase()));
+                }
+            });
+
+            popup.style.display = 'none';
+            tooltip.style.display = 'none';
+
+        } catch (err) {
+            console.error(err);
+        }
+    });
+
+    stopObservingButton.addEventListener('click', async () => {
+        observingUser = null;
+        observingBanner.style.display = 'none';
+
+        await loadUserCountries();
+
+        const paths = document.querySelectorAll('path');
+        paths.forEach(p => p.classList.remove('planned', 'visited'));
+
+        Object.keys(userCountries).forEach(country => {
+            const countryPaths = document.querySelectorAll(`[data-country="${country}"]`);
+            countryPaths.forEach(p => p.classList.add(userCountries[country]));
+        });
+    });
+
+    (async () => {
+        await loadUserInfo();
+        await loadOtherUsers();
+        await loadUserCountries();
+        await loadMap();
+    })();
+</script>
 </body>
 </html>

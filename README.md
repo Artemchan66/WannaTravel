@@ -19,3 +19,4 @@
 * [ ] Add country search with option to color it
 * [ ] Add integration with messengers API:
 	* [ ] Telegram
+* [x] Add other users observation

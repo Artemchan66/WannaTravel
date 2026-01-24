@@ -6,6 +6,7 @@ using WannaTravel.Logic.Interfaces;
 
 namespace WannaTravel.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class UsersController : ControllerBase
@@ -16,9 +17,21 @@ public class UsersController : ControllerBase
     {
         _userLogic = userLogic;
     }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+        => Ok(await _userLogic.ReadAll());
     
+    [HttpGet("{userId}")]
+    public async Task<IActionResult> GetById(Guid userId)
+    {
+        var user = await _userLogic.ReadById(userId);
+        if (user is null)
+            return NotFound();
+        return Ok(new { user.Id, user.Name });
+    }
+
     [HttpGet("me")]
-    [Authorize]
     public async Task<IActionResult> GetCurrentUser()
     {
         var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);

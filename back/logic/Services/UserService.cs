@@ -14,6 +14,9 @@ public class UserService : IUserService
         _hasher = hasher;
     }
 
+    public async Task<IEnumerable<User>> ReadAll()
+        => await _userRepo.ReadAll();
+    
     public async Task<User?> ReadById(Guid id)
         => await _userRepo.ReadById(id);
 

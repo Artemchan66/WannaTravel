@@ -18,6 +18,13 @@ public class UserCountriesController : ControllerBase
         _service = service;
     }
 
+    [HttpGet("{userId}")]
+    public async Task<IActionResult> Get(Guid userId)
+    {
+        var data = await _service.GetUserMap(userId);
+        return Ok(data);
+    }
+    
     [HttpGet]
     public async Task<IActionResult> Get()
     {

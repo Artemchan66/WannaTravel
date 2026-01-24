@@ -13,6 +13,9 @@ public class UserRepository : IUserRepository
         this.db = db;
     }
     
+    public async Task<IEnumerable<User>> ReadAll()
+        => await db.Users.ToListAsync();
+    
     public async Task<User?> ReadByName(string name)
         => await db.Users.FirstOrDefaultAsync(w => w.Name == name);
     
