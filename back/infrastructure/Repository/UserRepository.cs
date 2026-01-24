@@ -12,12 +12,12 @@ public class UserRepository : IUserRepository
     {
         this.db = db;
     }
-
-    public async Task<IEnumerable<User>> GetAll()
-        => await db.Users.ToListAsync();
-
-    public async Task<User?> GetByUsername(string name)
+    
+    public async Task<User?> ReadByName(string name)
         => await db.Users.FirstOrDefaultAsync(w => w.Name == name);
+    
+    public async Task<User?> ReadById(Guid id)
+        => await db.Users.FirstOrDefaultAsync(w => w.Id == id);
 
     public async Task Create(User user)
     {

@@ -17,9 +17,9 @@ public class CookieAuthService : ICookieAuthService
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public async Task<User?> Login(string username, string password)
+    public async Task<User?> Login(string name, string password)
     {
-        var user = await _authService.Login(username, password);
+        var user = await _authService.Login(name, password);
         if (user == null) return null;
 
         var claims = new List<Claim>

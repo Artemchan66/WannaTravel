@@ -1,6 +1,6 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using WannaTravel.Infrastructure.Entities;
-using WannaTravel.Logic;
 using WannaTravel.Logic.DTOs;
 using WannaTravel.Logic.Interfaces;
 
@@ -16,10 +16,18 @@ public class UsersController : ControllerBase
     {
         _userLogic = userLogic;
     }
+    
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<IActionResult> GetCurrentUser()
+    {
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-    [HttpGet]
-    public async Task<IActionResult> Get()
-        => Ok(await _userLogic.ReadAllUsers());
+        var user = await _userLogic.ReadById(userId);
+        if (user is null)
+            return NotFound();
+        return Ok(new { user.Id, user.Name });
+    }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateUserDto req)

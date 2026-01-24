@@ -4,9 +4,9 @@ namespace WannaTravel.Logic.Interfaces;
 
 public interface IUserRepository
 {
-    Task<IEnumerable<User>> GetAll();
+    Task<User?> ReadByName(string name);
 
-    Task<User?> GetByUsername(string name);
+    Task<User?> ReadById(Guid id);
 
     Task Create(User user);
 }

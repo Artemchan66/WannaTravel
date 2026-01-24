@@ -5,21 +5,21 @@ namespace WannaTravel.Logic.Services;
 
 public class AuthService : IAuthService
 {
-    private readonly IUserRepository userRepo;
-    private readonly IPasswordHasher hasher;
+    private readonly IUserRepository _userRepo;
+    private readonly IPasswordHasher _hasher;
 
     public AuthService(IUserRepository userRepo, IPasswordHasher hasher)
     {
-        this.userRepo = userRepo;
-        this.hasher = hasher;
+        _userRepo = userRepo;
+        _hasher = hasher;
     }
 
-    public async Task<User?> Login(string username, string password)
+    public async Task<User?> Login(string name, string password)
     {
-        var user = await userRepo.GetByUsername(username);
+        var user = await _userRepo.ReadByName(name);
         if (user == null) return null;
 
-        if (!hasher.Verify(user.PasswordHash, password))
+        if (!_hasher.Verify(user.PasswordHash, password))
             return null;
 
         return user;

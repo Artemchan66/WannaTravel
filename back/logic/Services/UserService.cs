@@ -14,8 +14,8 @@ public class UserService : IUserService
         _hasher = hasher;
     }
 
-    public async Task<IEnumerable<User>> ReadAllUsers()
-        => await _userRepo.GetAll();
+    public async Task<User?> ReadById(Guid id)
+        => await _userRepo.ReadById(id);
 
     public async Task<User> Create(string name, string password)
     {
