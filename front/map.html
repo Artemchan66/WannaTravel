@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>My Travel Map</title>
+    <link rel="icon" href="data:,">
 
     <style>
         html, body {
@@ -46,35 +47,82 @@
         path {
             transition: fill 0.3s;
         }
+
+        #country-popup {
+            position: absolute;
+            background: #fff;
+            border-radius: 6px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+            padding: 8px;
+            display: none;
+            z-index: 20;
+            font-size: 14px;
+        }
+
+        #popup-title {
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        #country-popup button {
+            margin: 2px;
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #country-popup button[data-state="planned"] {
+            background: #2196f3;
+            color: #fff;
+        }
+
+        #country-popup button[data-state="visited"] {
+            background: #4caf50;
+            color: #fff;
+        }
+
+        #country-popup button[data-state="none"] {
+            background: #ccc;
+        }
     </style>
 </head>
+
 <body>
 
 <div id="map-container"></div>
 <div id="tooltip"></div>
+
+<div id="country-popup">
+    <div id="popup-title"></div>
+    <button data-state="planned">Planned</button>
+    <button data-state="visited">Visited</button>
+    <button data-state="none">None</button>
+</div>
 
 <script>
     const API = 'http://localhost:5221/api/';
     const tooltip = document.getElementById('tooltip');
     const mapContainer = document.getElementById('map-container');
 
+    const popup = document.getElementById('country-popup');
+    const popupTitle = document.getElementById('popup-title');
+
     const userCountries = {};
+
+    let activeCountry = null;
+    let activePaths = null;
 
     async function loadUserCountries() {
         try {
             const res = await fetch(`${API}user/countries`, { credentials: 'include' });
             if (!res.ok) return;
             const data = await res.json();
-            console.log(data);
             data.forEach(x => {
-                if (x.status) {
-                    userCountries[x.countryName] = x.status.toLowerCase();
-                }
+                if (x.status) userCountries[x.countryName] = x.status.toLowerCase();
             });
-
-            console.log('Loaded countries:', userCountries);
         } catch (err) {
-            console.error('Error loading user countries:', err);
+            console.error(err);
         }
     }
 
@@ -87,12 +135,12 @@
             }
 
             mapContainer.innerHTML = await res.text();
+
             const svg = mapContainer.querySelector('svg');
             svg.setAttribute('width', '100%');
             svg.setAttribute('height', '100%');
 
             const paths = svg.querySelectorAll('path');
-
             paths.forEach(p => p.removeAttribute('fill'));
 
             const countries = {};
@@ -101,23 +149,24 @@
                 if (!name) return;
 
                 path.dataset.country = name;
-
                 if (!countries[name]) countries[name] = [];
                 countries[name].push(path);
             });
 
             Object.keys(countries).forEach(name => {
                 const countryPaths = countries[name];
-                const state = userCountries[name];
 
-                if (state) {
-                    countryPaths.forEach(p => p.classList.add(state));
+                if (userCountries[name]) {
+                    countryPaths.forEach(p => p.classList.add(userCountries[name]));
                 }
 
                 countryPaths.forEach(path => {
+
                     path.addEventListener('mouseenter', () => {
                         countryPaths.forEach(p => p.classList.add('hover'));
-                        tooltip.textContent = state ? `${name} (${state})` : name;
+                        tooltip.textContent = userCountries[name]
+                            ? `${name} (${userCountries[name]})`
+                            : name;
                         tooltip.style.display = 'block';
                     });
 
@@ -131,37 +180,57 @@
                         tooltip.style.display = 'none';
                     });
 
-                    path.addEventListener('click', async e => {
+                    path.addEventListener('click', e => {
                         e.stopPropagation();
 
-                        let nextState;
-                        if (!userCountries[name]) nextState = 'planned';
-                        else if (userCountries[name] === 'planned') nextState = 'visited';
-                        else nextState = null;
+                        activeCountry = name;
+                        activePaths = countryPaths;
 
-                        if (nextState) userCountries[name] = nextState;
-                        else delete userCountries[name];
-
-                        countryPaths.forEach(p => p.classList.remove('planned', 'visited'));
-                        if (nextState) countryPaths.forEach(p => p.classList.add(nextState));
-
-                        try {
-                            await fetch(`${API}user/countries`, {
-                                method: 'PATCH',
-                                headers: { 'Content-Type': 'application/json' },
-                                credentials: 'include',
-                                body: JSON.stringify({ Country: name, Status: nextState })
-                            });
-                        } catch (err) {
-                            console.error('Error saving country state:', err);
-                        }
+                        popupTitle.textContent = name;
+                        popup.style.left = e.pageX + 'px';
+                        popup.style.top = e.pageY + 'px';
+                        popup.style.display = 'block';
                     });
                 });
             });
+
         } catch (err) {
-            console.error('Error loading map:', err);
+            console.error(err);
         }
     }
+
+    popup.addEventListener('click', async e => {
+        if (!e.target.dataset.state) return;
+
+        let state = e.target.dataset.state;
+        if (state === 'none') state = null;
+
+        if (state) userCountries[activeCountry] = state;
+        else delete userCountries[activeCountry];
+
+        activePaths.forEach(p => p.classList.remove('planned', 'visited'));
+        if (state) activePaths.forEach(p => p.classList.add(state));
+
+        popup.style.display = 'none';
+
+        try {
+            await fetch(`${API}user/countries`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    Country: activeCountry,
+                    Status: state
+                })
+            });
+        } catch (err) {
+            console.error(err);
+        }
+    });
+
+    document.addEventListener('click', () => {
+        popup.style.display = 'none';
+    });
 
     (async () => {
         await loadUserCountries();
