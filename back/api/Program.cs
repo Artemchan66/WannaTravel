@@ -1,7 +1,12 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
-using WannaTravel.Infrastructure;
+using WannaTravel.API.Services;
+using WannaTravel.Infrastructure.Data;
 using WannaTravel.Infrastructure.Repository;
-using WannaTravel.Logic;
+using WannaTravel.Infrastructure.Security;
+using WannaTravel.Logic.Interfaces;
+using WannaTravel.Logic.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,15 +16,38 @@ builder.Services.AddDbContext<AppDbContext>(options
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("http://localhost:5500")
               .AllowAnyHeader()
-              .AllowAnyMethod());
+              .AllowAnyMethod()
+              .AllowCredentials());
 });
 
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IUserLogic, UserLogic>();
+builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddControllers();
+builder.Services.AddScoped<ICookieAuthService, CookieAuthService>();
+
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUserCountryService, UserCountryService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
+
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserCountryRepository, UserCountryRepository>();
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(opt =>
+    {
+        opt.LoginPath = "/api/auth/login";
+        opt.LogoutPath = "/api/auth/logout";
+        opt.ExpireTimeSpan = TimeSpan.FromHours(8);
+    });
+
+builder.Services.AddControllers()
+    .AddJsonOptions(opt =>
+    {
+        opt.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter());
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -41,6 +69,7 @@ app.UseCors();
 
 app.UseStaticFiles();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

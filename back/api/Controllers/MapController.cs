@@ -3,7 +3,7 @@
 namespace WannaTravel.API.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class MapController : ControllerBase
 {
     [HttpGet("world")]

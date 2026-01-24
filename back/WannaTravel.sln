@@ -15,6 +15,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WannaTravel.Infrastructure"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WannaTravel.Logic", "logic\WannaTravel.Logic.csproj", "{F22BF897-F21B-4678-82B7-2C9C001B3B01}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "domain", "domain", "{9E6ECCD1-6836-4BE4-95D4-9B44670F0762}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WannaTravel.Domain", "WannaTravel.Domain\WannaTravel.Domain.csproj", "{97A90495-9D80-4CD5-AEB4-EA1344DB8FAC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,10 @@ Global
 		{F22BF897-F21B-4678-82B7-2C9C001B3B01}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F22BF897-F21B-4678-82B7-2C9C001B3B01}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F22BF897-F21B-4678-82B7-2C9C001B3B01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97A90495-9D80-4CD5-AEB4-EA1344DB8FAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97A90495-9D80-4CD5-AEB4-EA1344DB8FAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97A90495-9D80-4CD5-AEB4-EA1344DB8FAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97A90495-9D80-4CD5-AEB4-EA1344DB8FAC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -41,6 +49,7 @@ Global
 		{77E4464A-8161-44D7-985D-6867EFF308DC} = {BF48BC96-02D3-40F4-A0A2-C066FEA654AF}
 		{33FC7217-73CB-4F47-9B06-D46AAC42650B} = {13AF9EAF-C548-4B7F-ABB2-BAA0A5BC9144}
 		{F22BF897-F21B-4678-82B7-2C9C001B3B01} = {07697764-D6D4-4D96-BC3D-2CE6CE427673}
+		{97A90495-9D80-4CD5-AEB4-EA1344DB8FAC} = {9E6ECCD1-6836-4BE4-95D4-9B44670F0762}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9E5E56D8-A3BD-46B6-B667-8EFA35E1F049}
