@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>My Travel Map</title>
     <link rel="icon" href="data:,">
-
     <style>
         html, body {
             margin: 0;
@@ -15,6 +14,8 @@
         #map-container {
             width: 100vw;
             height: 100vh;
+            overflow: hidden;
+            position: relative;
         }
 
         #tooltip {
@@ -87,7 +88,6 @@
         }
     </style>
 </head>
-
 <body>
 
 <div id="map-container"></div>
@@ -100,6 +100,8 @@
     <button data-state="none">None</button>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
+
 <script>
     const API = 'http://localhost:5221/api/';
     const tooltip = document.getElementById('tooltip');
@@ -109,9 +111,25 @@
     const popupTitle = document.getElementById('popup-title');
 
     const userCountries = {};
-
     let activeCountry = null;
     let activePaths = null;
+    let panZoomInstance = null;
+
+    let isDragging = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+
+    mapContainer.addEventListener('mousedown', e => {
+        isDragging = false; // reset
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+    });
+
+    mapContainer.addEventListener('mousemove', e => {
+        if (Math.abs(e.clientX - dragStartX) > 5 || Math.abs(e.clientY - dragStartY) > 5) {
+            isDragging = true;
+        }
+    });
 
     async function loadUserCountries() {
         try {
@@ -135,7 +153,6 @@
             }
 
             mapContainer.innerHTML = await res.text();
-
             const svg = mapContainer.querySelector('svg');
             svg.setAttribute('width', '100%');
             svg.setAttribute('height', '100%');
@@ -147,7 +164,6 @@
             paths.forEach(path => {
                 const name = path.getAttribute('name') || path.getAttribute('class');
                 if (!name) return;
-
                 path.dataset.country = name;
                 if (!countries[name]) countries[name] = [];
                 countries[name].push(path);
@@ -161,7 +177,6 @@
                 }
 
                 countryPaths.forEach(path => {
-
                     path.addEventListener('mouseenter', () => {
                         countryPaths.forEach(p => p.classList.add('hover'));
                         tooltip.textContent = userCountries[name]
@@ -182,16 +197,27 @@
 
                     path.addEventListener('click', e => {
                         e.stopPropagation();
-
+                        if (isDragging) return;
+                        
                         activeCountry = name;
                         activePaths = countryPaths;
-
                         popupTitle.textContent = name;
-                        popup.style.left = e.pageX + 'px';
-                        popup.style.top = e.pageY + 'px';
+                        popup.style.left = e.clientX + 'px';
+                        popup.style.top = e.clientY + 'px';
                         popup.style.display = 'block';
                     });
                 });
+            });
+
+            panZoomInstance = svgPanZoom(svg, {
+                zoomEnabled: true,
+                controlIconsEnabled: true,
+                fit: true,
+                center: true,
+                minZoom: 0.5,
+                maxZoom: 10,
+                onZoom: () => { tooltip.style.display = 'none'; popup.style.display = 'none'; },
+                onPan: () => { tooltip.style.display = 'none'; popup.style.display = 'none'; }
             });
 
         } catch (err) {
