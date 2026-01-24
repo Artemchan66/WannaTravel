@@ -43,9 +43,10 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost]
+    [AllowAnonymous]
     public async Task<IActionResult> Create([FromBody] CreateUserDto req)
     {
-        var user = await _userLogic.Create(req.Name, req.Passwords);
+        var user = await _userLogic.Create(req.Name, req.Password);
         return Ok(new { user.Id, user.Name });
     }
 }
